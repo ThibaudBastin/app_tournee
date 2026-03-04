@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tournée</title>
+
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#1f1f2e" />
+
+<style>
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(135deg, #1f1f2e, #2b2b3d);
+  color: white;
+  display: flex;
+  justify-content: center;
+}
+
+.container {
+  width: 100%;
+  max-width: 420px;
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+  font-size: 32px;
+}
+
+.card {
+  background: rgba(255,255,255,0.05);
+  border-radius: 20px;
+  padding: 15px;
+  margin-bottom: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+button {
+  border: none;
+  cursor: pointer;
+}
+
+.round {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-weight: bold;
+}
+
+.plus { background: #6c5ce7; color: white; }
+.minus { background: #ff7675; color: white; }
+.delete { background: transparent; color: #ff7675; font-size: 18px; }
+
+.total-box {
+  margin-top: 20px;
+  text-align: center;
+  background: #6c5ce7;
+  padding: 20px;
+  border-radius: 20px;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.add-section {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+}
+
+.add-btn {
+  background: #00b894;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 10px;
+}
+
+.reset {
+  margin-top: 15px;
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  background: #444;
+  color: white;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+  <h1>🍻 Tournée</h1>
+
+  <div id="drinkList"></div>
+
+  <div class="total-box">
+    Total : <span id="total">0</span> verres
+  </div>
+
+  <div class="add-section">
+    <input id="newDrink" placeholder="Nouvelle boisson..." />
+    <button class="add-btn" onclick="addDrink()">Ajouter</button>
+  </div>
+
+  <button class="reset" onclick="reset()">Nouvelle tournée</button>
+</div>
+
+<script>
+let drinks = JSON.parse(localStorage.getItem("tourneeDrinks")) || {
+  "🍺 Bière": 0,
+  "🍷 Vin": 0
+};
+
+function save() {
+  localStorage.setItem("tourneeDrinks", JSON.stringify(drinks));
+}
+
+function update() {
+  const list = document.getElementById("drinkList");
+  list.innerHTML = "";
+
+  let total = 0;
+
+  for (let name in drinks) {
+    total += drinks[name];
+
+    list.innerHTML += `
+      <div class="card">
+        <div>${name}</div>
+        <div class="controls">
+          <button class="round minus" onclick="change('${name}', -1)">−</button>
+          <span>${drinks[name]}</span>
+          <button class="round plus" onclick="change('${name}', 1)">+</button>
+          <button class="delete" onclick="removeDrink('${name}')">✕</button>
+        </div>
+      </div>
+    `;
+  }
+
+  document.getElementById("total").innerText = total;
+  save();
+}
+
+function change(name, amount) {
+  drinks[name] = Math.max(0, drinks[name] + amount);
+  update();
+}
+
+function addDrink() {
+  const input = document.getElementById("newDrink");
+  const name = input.value.trim();
+  if (name && !drinks[name]) {
+    drinks[name] = 0;
+    input.value = "";
+    update();
+  }
+}
+
+function removeDrink(name) {
+  delete drinks[name];
+  update();
+}
+
+function reset() {
+  for (let name in drinks) {
+    drinks[name] = 0;
+  }
+  update();
+}
+
+update();
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("service-worker.js");
+}
+</script>
+</body>
+</html>
