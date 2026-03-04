@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>Jagerteam tournée</title>
+<title>Tournée</title>
 
 <link rel="manifest" href="manifest.json" />
-<meta name="theme-color" content="#1f1f2e" />
+<meta name="theme-color" content="#000000" />
 
 <style>
 /* ===== BODY ===== */
@@ -123,7 +123,7 @@ input {
 
 /* ===== RESET ===== */
 .reset {
-  margin-top: 15px;
+  margin-top: 10px;
   width: 100%;
   padding: 12px;
   border-radius: 12px;
@@ -148,11 +148,14 @@ input {
     <button class="add-btn" onclick="addDrink()">Ajouter</button>
   </div>
 
-  <button class="reset" onclick="reset()">Nouvelle tournée</button>
+  <!-- Boutons de reset -->
+  <button class="reset" onclick="resetQuantitiesOnly()">Nouvelle tournée</button>
+  <button class="reset" onclick="resetToInitial()">Reset boissons initiales</button>
 </div>
 
 <script>
-let drinks = JSON.parse(localStorage.getItem("tourneeDrinks")) || {
+// ===== BOISSONS INITIALES =====
+const initialDrinks = {
   "🍺 Bière": 0,
   "🍺 Panaché": 0,
   "🍺 Mazout": 0,
@@ -165,10 +168,14 @@ let drinks = JSON.parse(localStorage.getItem("tourneeDrinks")) || {
   "🍹 Woodsprite": 0
 };
 
+// ===== CHARGEMENT LOCALSTORAGE =====
+let drinks = JSON.parse(localStorage.getItem("tourneeDrinks")) || JSON.parse(JSON.stringify(initialDrinks));
+
 function save() {
   localStorage.setItem("tourneeDrinks", JSON.stringify(drinks));
 }
 
+// ===== MISE À JOUR DE L'AFFICHAGE =====
 function update() {
   const list = document.getElementById("drinkList");
   list.innerHTML = "";
@@ -195,11 +202,13 @@ function update() {
   save();
 }
 
+// ===== CHANGER QUANTITÉ =====
 function change(name, amount) {
   drinks[name] = Math.max(0, drinks[name] + amount);
   update();
 }
 
+// ===== AJOUTER UNE BOISSON =====
 function addDrink() {
   const input = document.getElementById("newDrink");
   const name = input.value.trim();
@@ -210,20 +219,30 @@ function addDrink() {
   }
 }
 
+// ===== SUPPRIMER UNE BOISSON =====
 function removeDrink(name) {
   delete drinks[name];
   update();
 }
 
-function reset() {
+// ===== RESET QUANTITÉS =====
+function resetQuantitiesOnly() {
   for (let name in drinks) {
     drinks[name] = 0;
   }
   update();
 }
 
+// ===== RESET BOISSONS INITIALES =====
+function resetToInitial() {
+  drinks = JSON.parse(JSON.stringify(initialDrinks));
+  update();
+}
+
+// ===== INITIALISATION =====
 update();
 
+// ===== SERVICE WORKER =====
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("service-worker.js");
 }
